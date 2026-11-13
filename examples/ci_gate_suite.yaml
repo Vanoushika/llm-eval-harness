@@ -1,0 +1,31 @@
+# CI gate suite — the suite CI runs on every push.
+# Every case here passes against the offline provider, so the CLI exits 0
+# and a deploy proceeds. Use this as the template for your own gate suite:
+# cases that must hold for every prompt or model change.
+# (The demo suite examples/sample_suite.yaml deliberately contains one
+# failing case, so it is for showing failure detection, not for gating.)
+name: ci-gate
+description: Small all-passing suite used as the deploy gate in CI.
+model: offline
+cases:
+  - name: capital-of-france
+    input: {}
+    prompt_template: "What is the capital of France? Answer with just the city name."
+    expected: "Paris"
+    scorers:
+      - type: contains
+        keywords: ["Paris"]
+  - name: json-shape
+    input:
+      person: Ada
+    prompt_template: "Return a JSON object with the name {person} and a role."
+    scorers:
+      - type: json_valid
+      - type: contains
+        keywords: ["Ada"]
+  - name: arithmetic
+    input: {}
+    prompt_template: "What is 2 + 2? Answer with just the number."
+    expected: "4"
+    scorers:
+      - type: exact_match
