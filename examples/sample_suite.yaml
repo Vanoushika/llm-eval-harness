@@ -1,0 +1,35 @@
+# Sample suite — four cases showing the deterministic scorers at work.
+# Run it with:  python -m evalharness.cli run examples/sample_suite.yaml
+# Three cases pass against the offline provider; the fourth is deliberately
+# wrong (it expects Berlin for the capital of France) to show a failure.
+name: sample-factual-qa
+description: Small factual Q&A suite demonstrating the built-in scorers.
+model: offline
+cases:
+  - name: capital-of-france
+    input: {}
+    prompt_template: "What is the capital of France? Answer with just the city name."
+    expected: "Paris"
+    scorers:
+      - type: contains
+        keywords: ["Paris"]
+  - name: json-shape
+    input:
+      person: Ada
+    prompt_template: "Return a JSON object with the name {person} and a role."
+    scorers:
+      - type: json_valid
+      - type: contains
+        keywords: ["Ada"]
+  - name: arithmetic
+    input: {}
+    prompt_template: "What is 2 + 2? Answer with just the number."
+    expected: "4"
+    scorers:
+      - type: exact_match
+  - name: deliberately-wrong-expectation
+    input: {}
+    prompt_template: "What is the capital of France? Answer with just the city name."
+    expected: "Berlin"
+    scorers:
+      - type: exact_match
