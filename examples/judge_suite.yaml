@@ -1,0 +1,48 @@
+# Judge + groundedness suite — the day 2 scorers at work.
+# Run it with:  python -m evalharness.cli run examples/judge_suite.yaml
+# All cases use stub_output so the run is fully deterministic offline:
+# the "fake" judge scores from expected-answer containment, topical
+# overlap and length sanity, and its rationale says exactly that.
+# Two cases pass; two are deliberately wrong — one invented fact (the
+# groundedness scorer catches it) and one wrong answer (the judge
+# catches it) — to show both failure modes.
+name: judge-and-groundedness-demo
+description: LLM-as-judge and groundedness scorers on stubbed outputs.
+model: offline
+cases:
+  - name: judge-correct-answer
+    input: {}
+    prompt_template: "What is the capital of France? Answer with just the city name."
+    expected: "Paris"
+    stub_output: "The capital of France is Paris."
+    scorers:
+      - type: llm_judge
+        rubric: "Score 1.0 if the output names the correct capital city of France, 0.0 otherwise."
+        judge: fake
+        threshold: 0.5
+  - name: grounded-summary
+    input: {}
+    prompt_template: "Summarise this product note in one sentence: the Acme Widget is red, costs $19, and ships in 2 days."
+    stub_output: "The red Acme Widget costs $19 and ships in 2 days."
+    scorers:
+      - type: groundedness
+        keywords: ["red", "$19", "2 days"]
+        forbidden: ["blue", "free shipping", "$29"]
+  - name: grounded-hallucinated-fact
+    input: {}
+    prompt_template: "Summarise this product note in one sentence: the Acme Widget is red, costs $19, and ships in 2 days."
+    stub_output: "The blue Acme Widget costs $29 with free shipping."
+    scorers:
+      - type: groundedness
+        keywords: ["red", "$19", "2 days"]
+        forbidden: ["blue", "free shipping", "$29"]
+  - name: judge-wrong-answer
+    input: {}
+    prompt_template: "What is 2 + 2? Answer with just the number."
+    expected: "4"
+    stub_output: "The answer is 5."
+    scorers:
+      - type: llm_judge
+        rubric: "Score 1.0 if the output gives the correct arithmetic answer, 0.0 otherwise."
+        judge: fake
+        threshold: 0.5
